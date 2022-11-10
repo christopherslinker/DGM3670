@@ -1,0 +1,173 @@
+//START GEO
+proc bodyBuilder(){
+
+    polySphere - 
+        radius 1;
+
+    
+    polySphere - 
+        radius .75; 
+        move -r 0 1.5 0;
+        
+    polySphere - 
+        radius 0.5; 
+        move -r 0 2.5 0;
+        
+    select - all;
+    
+    polyUnite;
+    
+    CenterPivot;
+    
+    //polyMergeVertex - d 0.005;
+    //This was merging verts together but it stopped for some reason.
+    
+    DeleteHistory;
+
+    polySmooth;
+    
+    rename "polySurface1" "Body_Geo";
+    
+} 
+
+proc noseBuilder(){
+    polyCylinder -
+        radius 0.07;
+        scale 1 .25 1;
+        move 0 2.5 0.5;
+        rotate 90 0 0;
+        
+    rename "pCylinder1" "Nose_Geo";
+    
+    select -replace "Nose_Geo";
+    select -replace Nose_Geo.f[21];
+    scale -worldSpace -relative -pivot -7.45058e-09cm 2.5cm 0.75cm 0.25776 0.25776 0.25776;
+    
+    select -replace "Nose_Geo";
+    
+    polySmooth;
+    
+    CenterPivot;
+    
+    DeleteHistory;
+
+}
+
+proc faceBuilder(){
+    polySphere - 
+        radius 0.05; 
+        move -0.067 2.572 0.473;
+        scale 1 1 .5;
+        
+    polySphere -
+        radius 0.05; 
+        move 0.067 2.572 0.473;
+        scale 1 1 .5;
+        
+    select -replace "pSphere1";
+    rename "pSphere1" "Eye_Right_Geo";
+    
+    select -replace "pSphere2";
+    rename "pSphere2" "Eye_Left_Geo";
+    
+    select -replace Eye_Right_Geo Eye_Left_Geo;
+    DeleteHistory;
+    
+    select -replace Eye_Right_Geo Eye_Left_Geo;
+    group;
+    rename "group1" "Eyes_Geo";      
+}
+
+proc topHatBuilder(){
+    polyCylinder -
+            radius .4;
+            scale 1 .5 1;
+            move 0 3.4 0;
+            rotate 0 0 0;
+        
+        polyCylinder -
+            radius .4;
+            scale 1.5 .05 1.5;
+            move 0 2.85 0;
+            rotate 0 0 0;
+            
+        select -replace pCylinder1 ;
+        rename "pCylinder1" "Hat_Top_Geo";
+        
+        select -replace pCylinder2;
+        rename "pCylinder2" "Hat_Brim_Geo";
+        
+        select -replace Hat_Top_Geo Hat_Brim_Geo;
+
+        DeleteHistory;
+        
+        Group;
+        rename "group1" "Hat_Geo";
+        
+        CenterPivot;
+        
+        select -clear;
+}
+
+
+proc parentGeo(){
+    select -replace Hat_Geo Eyes_Geo Nose_Geo ;
+    parent Hat_Geo Body_Geo ;
+    parent Eyes_Geo Body_Geo ;
+    parent Nose_Geo Body_Geo ;
+    
+    select -clear;
+}
+
+//END OF GEO
+//START OF SKELETON
+
+proc skeletonBuilder(){
+
+    joint -
+        radius 0.5;
+        
+
+    joint -
+        radius 0.5;
+        select -replace joint2 ;
+        move -relative 0 1.499071 0 ;
+    
+    
+    joint -
+        radius 0.5;
+        select -replace joint3 ;
+        move -relative 0 1.010973 0 ;
+        
+    joint -
+        radius 0.5;
+        select -replace joint4 ;
+        move -relative 0 1.029695 0 ;
+    
+    select -replace joint1 ;
+    searchReplaceNames "joint" "snow man jnt 0" "hierarchy";
+    
+    select -replace snow_man_jnt_01;
+    select -toggle Body_Geo;
+    
+    bindSkin;
+
+}
+
+
+bodyBuilder();
+
+noseBuilder();
+
+faceBuilder();
+
+topHatBuilder();
+
+parentGeo();
+
+skeletonBuilder();
+
+
+
+
+
